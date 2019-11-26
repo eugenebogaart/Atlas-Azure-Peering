@@ -1,7 +1,7 @@
 # MongoDB Atlas porject peered into Azure VNet 
 
 # Background
-Based on an small Proof of Concept to make Atlas available via VNet peering in Azure, this script was generalized to automate all steps. Assumption was to automate each step, including the scripts to define custom roles for peering.
+Based on an small Proof of Concept to make Atlas available via VNet peering in Azure, this script was generalized to automate all steps. Assumption was to automate each step, including the scripts to define custom roles for peering.  The documentation on how to do this in several manual steps is here: https://docs.atlas.mongodb.com/security-vpc-peering/
 
 # Prerequisites:
 * Authenticate into Azure via CLI with:  az login
@@ -54,3 +54,19 @@ locals {
 }
 ```
 
+# Setup-role.sh
+
+Several the manual steps to run are Azure CLI scripts generated in the Atlas Peering wizard dialog. In this case these scripts are generated and called as shell script in between completion of Terraform resources.  The script is run when the  mongodbatlas_network_container is completed.  See below resource
+
+```
+resource "mongodbatlas_network_container" "test" {
+  project_id       = mongodbatlas_project.my_project.id
+  atlas_cidr_block = local.atlas_cidr_block
+  provider_name    = "AZURE"
+  region           = "EUROPE_WEST"
+  provisioner "local-exec" {
+    command = "./setup-role.sh ${var.azure_subscription_id} ${local.resource_group_name} ${local.vnet_name} >> setup-role.output"
+  }
+}
+```
+ 
