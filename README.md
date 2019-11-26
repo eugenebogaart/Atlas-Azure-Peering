@@ -18,7 +18,7 @@ Based on an small Proof of Concept to make Atlas available via VNet peering in A
 * Create a virtual machine Azure is left to the reader.  
 
 
-# Configure Script
+# Configure Script - Credentials
 
 To configure the Terraform script, one needs public and private key setup for Atlas. 
 These keys are expected in environment variables, or can be provide as command line 
@@ -34,4 +34,23 @@ as environment variables. Values need to be provided in TF_VAR_ format.
 * TF_VAR_azure_subscription_id=<SUBSCRIPTION_ID>
 * TF_VAR_azure_tenant_id=<DIRECTORY_ID>
 
+# Other configuration
+
+In the locals resource or the Terraform file, several parameters should be adapted to your need
+```
+locals {
+  # Atlas organization where to provsion a new group
+  organization_id       = "599ef70e9f78f769464e3729"
+  # New empty Atlas project name to create in organization
+  project_id            = "Azure-Peered-project"  
+  # Atlas cidr block 
+  atlas_cidr_block      = "10.10.5.0/24"
+  # A Azure resource group 
+  resource_group_name   = "performance-test"
+  # Associated Azure vnet
+  vnet_name             = "atlas-peering-vnet"
+  # Azure subnet for vnet
+  address_space         = ["10.11.4.0/23"]
+}
+```
 
