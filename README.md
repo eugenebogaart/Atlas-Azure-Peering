@@ -1,7 +1,7 @@
 # MongoDB Atlas project peered into Azure VNet 
 
 ## Background
-Based on an small Proof of Concept to make Atlas available via VNet peering in Azure, this script was generalized to automate all steps. Assumption was to automate each step, including the scripts to define custom roles for peering.  The documentation on how to do this in several manual steps is here: https://docs.atlas.mongodb.com/security-vpc-peering/
+Based on an small Proof of Concept to make Atlas available via VNet peering in Azure in the same region, this script was generalized to automate all steps. Assumption was to automate each step, including the scripts to define custom roles for peering.  The documentation on how to do this in several manual steps is here: https://docs.atlas.mongodb.com/security-vpc-peering/
 
 ## Prerequisites:
 * Authenticate into Azure via CLI with:  az login
