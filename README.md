@@ -6,13 +6,18 @@ Based on an small Proof of Concept to make Atlas available via VNet peering in A
 ## Prerequisites:
 * Authenticate into Azure via CLI with:  az login
 
-# Basic Terraform resources in script
+## Todo:
+* Add a subnet to Azure Vnet
+* Create a Virtual Machine in Azure
+* Install stuff on VM
+
+## Basic Terraform resources in script
 * mongodbatlas_project,  creates an empty project in your Atlas account
-* mongodbatlas_private_ip_mode,  switches project to private IP mode so it can be used for peering
+* mongodbatlas_private_ip_mode,  switches new project to private IP mode so it can be used for peering
 * mongodbatlas_network_container,  setup a container for peering (internal Atlas thing)
 * mongodbatlas_network_peering,  setup actual peering
-* azurerm_resource_group, create a Azure resource group to peer to
-* azurerm_virtual_network, create a Azure Virtual Network  to peer into
+* azurerm_resource_group, create a Azure resource group to hold vnet 
+* azurerm_virtual_network, create a Azure Virtual Network to peer into
 * mongodbatlas_cluster, finally create cluster 
 
 * Create a virtual machine Azure is left to the reader.  
