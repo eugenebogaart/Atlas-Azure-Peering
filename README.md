@@ -88,4 +88,8 @@ resource "mongodbatlas_network_container" "test" {
   }
 }
 ```
- 
+
+
+## Known Bugs
+* Some times the script ends with a complaint: External Azure subscription unreachable.
+Just run it again 
