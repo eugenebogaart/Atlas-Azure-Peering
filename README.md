@@ -1,9 +1,9 @@
-# MongoDB Atlas porject peered into Azure VNet 
+# MongoDB Atlas project peered into Azure VNet 
 
-# Background
+## Background
 Based on an small Proof of Concept to make Atlas available via VNet peering in Azure, this script was generalized to automate all steps. Assumption was to automate each step, including the scripts to define custom roles for peering.  The documentation on how to do this in several manual steps is here: https://docs.atlas.mongodb.com/security-vpc-peering/
 
-# Prerequisites:
+## Prerequisites:
 * Authenticate into Azure via CLI with:  az login
 
 # Basic Terraform resources in script
@@ -18,7 +18,7 @@ Based on an small Proof of Concept to make Atlas available via VNet peering in A
 * Create a virtual machine Azure is left to the reader.  
 
 
-# Configure Script - Credentials
+## Configure Script - Credentials
 
 To configure the Terraform script, one needs public and private key setup for Atlas. 
 These keys are expected in environment variables, or can be provide as command line 
@@ -34,7 +34,7 @@ as environment variables. Values need to be provided in TF_VAR_ format.
 * TF_VAR_azure_subscription_id=<SUBSCRIPTION_ID>
 * TF_VAR_azure_tenant_id=<DIRECTORY_ID>
 
-# Other configuration
+## Other configuration
 
 In the locals resource or the Terraform file, several parameters should be adapted to your need
 ```
@@ -54,7 +54,7 @@ locals {
 }
 ```
 
-# Setup-role.sh
+## Setup-role.sh
 
 While setup peering several manual steps are required. These run as Azure CLI scripts. In the interactive Atlas Peering wizard the script must be copied/paste in to the shell. Here these scripts are generated and called as shell script in between completion of Terraform resources.  The script is run when resource: "mongodbatlas_network_container" is completed.  See below resource:
 
