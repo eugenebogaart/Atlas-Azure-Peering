@@ -68,14 +68,14 @@ locals {
 
 ## Setup-role.sh
 
-While setup peering several manual steps are required. These run as Azure CLI scripts. In the interactive Atlas Peering wizard the script must be copied/paste in to the shell. Here these scripts are generated and called as shell script in between completion of Terraform resources.  The script is run when resource: "mongodbatlas_network_container" is completed.  See below resource:
+While setting up peering requires several manual steps, such as running Azure CLI scripts. In the interactive Atlas Peering wizard the scripts must be copied/paste into the shell. Here these scripts are generated and called as shell scripts in between completion of Terraform resources. The scripts are run when resource: "mongodbatlas_network_container" is completed.  See below resource:
 
 ```
 resource "mongodbatlas_network_container" "test" {
   project_id       = mongodbatlas_project.my_project.id
   atlas_cidr_block = local.atlas_cidr_block
   provider_name    = "AZURE"
-  region           = "EUROPE_WEST"
+  region           = local.region
   provisioner "local-exec" {
     command = "./setup-role.sh ${var.azure_subscription_id} ${local.resource_group_name} ${local.vnet_name} >> setup-role.output"
   }
