@@ -5,6 +5,9 @@ Based on an small Proof of Concept to make Atlas available via VNet peering in A
 
 ## Prerequisites:
 * Authenticate into Azure via CLI with:  az login
+* Have Terraform 0.12+ installed
+* Run: terraform init 
+* Run: terraform apply 
 
 ## Todo:
 * Add a subnet to Azure Vnet
