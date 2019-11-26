@@ -8,6 +8,13 @@ Based on an small Proof of Concept to make Atlas available via VNet peering in A
 * Have Terraform 0.12+ installed
 * Run: terraform init 
 
+```
+Initializing provider plugins...
+- Checking for available provider plugins...
+- Downloading plugin for provider "azurerm" (hashicorp/azurerm) 1.36.0...
+- Downloading plugin for provider "mongodbatlas" (terraform-providers/mongodbatlas) 0.3.1...
+```
+
 ## Config:
 * Set up credential, as in section: "Configure Script - Credentials"
 * Change basic parameters, as in section: "Other configuration"
