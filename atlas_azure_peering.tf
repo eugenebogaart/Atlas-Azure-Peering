@@ -35,17 +35,17 @@ locals {
   # Associated Azure vnet
   vnet_name             = "atlas-peering-vnet"
   # Azure location
-  location 		          = "West Europe"
+  location 		= "West Europe"
   # Azure alt location (ips and sec groups use this)
-  location_alt 		      = "westeurope"
+  location_alt 		= "westeurope"
   # Azure cidr block for vnet
   address_space         = ["10.11.4.0/23"]
   # Azure subnet in vnet
-  subnet		            = "subnet1"
+  subnet		= "subnet1"
   # Azure subnet cidr
   subnet_address_space  = "10.11.4.192/26"
-  # Azure vm admin_user
-  admin_username	      = "eugeneb"
+  # Azure vm admin_user 
+  admin_username	= "eugeneb"
 }
 
 ## Some remaining variables are still hardcoded,
@@ -106,6 +106,24 @@ resource "mongodbatlas_project_ip_whitelist" "test" {
       comment    = "cidr block Azure subnet1"
     }
 }
+
+resource "mongodbatlas_cluster" "this" {
+  name                  = "example"
+  project_id            = mongodbatlas_project.proj1.id
+
+  replication_factor           = 3
+  backup_enabled               = true
+  auto_scaling_disk_gb_enabled = true
+  mongo_db_major_version       = "4.0"
+
+  provider_name               = local.provider_name
+  provider_instance_size_name = "M10"
+  # this provider specific, why?
+  provider_region_name        = local.region
+
+  depends_on = [ mongodbatlas_network_peering.test ]
+}
+
 
 #################################################################
 #################### MICROSOFT AZURE SECTION ####################
@@ -181,7 +199,8 @@ resource "azurerm_network_security_group" "demo-vm-nsg" {
 # Create network interface
 resource "azurerm_network_interface" "demo-vm-nic" {
     name                      = "myNIC"
-    location                  = local.location_alt
+    #location                  = local.location_alt
+    location                  = azurerm_network_security_group.demo-vm-nsg.location
     resource_group_name       = azurerm_resource_group.atlas-group.name
     #network_security_group_id = azurerm_network_security_group.demo-vm-nsg.id
 
@@ -196,4 +215,69 @@ resource "azurerm_network_interface" "demo-vm-nic" {
         environment = "Atlas Demo"
     }
 }
+
+# Create virtual machine
+resource "azurerm_virtual_machine" "demo-vm" {
+    name                  = "demo-vm"
+    location              = local.location_alt
+    resource_group_name   = azurerm_resource_group.atlas-group.name
+    network_interface_ids = [azurerm_network_interface.demo-vm-nic.id]
+    vm_size               = "Standard_D2s_v3"
+
+    storage_os_disk {     
+        name              = "demo-OsDisk"
+        caching           = "ReadWrite"
+        create_option     = "FromImage"
+        managed_disk_type = "Standard_LRS"
+    }
+
+    #This will delete the OS disk and data disk automatically when deleting the VM
+    delete_os_disk_on_termination = "true"
+
+    storage_image_reference {
+        publisher         = "Canonical"
+        offer             = "UbuntuServer"
+        sku               = "18.04-LTS"
+        version           = "latest"
+    }
+
+    os_profile {
+        computer_name     = "demo-vm"
+        admin_username    = local.admin_username
+    }
+
+
+    os_profile_linux_config {
+        disable_password_authentication = true
+        ssh_keys {
+            path          = "/home/eugeneb/.ssh/authorized_keys"
+            key_data      = var.ssh_keys_data
+        }
+    }
+
+    tags = {
+        environment       = "Demo"
+    }
+
+    connection {
+        type = "ssh"
+        host = azurerm_public_ip.demo-vm-ip.ip_address
+        user = local.admin_username
+        private_key = file(var.private_key_path)
+    }
+
+#    provisioner "remote-exec" {
+#        inline = [
+#        "sleep 10",
+#        "sudo apt-get -y update",
+#        "sudo apt-get -y install python3-pip",
+#        "sudo apt-get -y update",
+#        "sudo apt-get -y install python3-pip",
+#        "sudo pip3 install pymongo==3.9.0",
+#        "sudo pip3 install faker",
+#        "sudo pip3 install dnspython"
+#        ]
+#    }
+}
+
 
