@@ -78,10 +78,12 @@ resource "mongodbatlas_network_container" "test" {
   }
 }
 
-resource "mongodbatlas_private_ip_mode" "my_private_ip_mode" {
-  project_id = mongodbatlas_project.proj1.id
-  enabled    = true
-}
+# As per April 1st, 2020 Peering Only mode is explict for legacy clusters
+# 
+#resource "mongodbatlas_private_ip_mode" "my_private_ip_mode" {
+#  project_id = mongodbatlas_project.proj1.id
+#  enabled    = true
+#}
 
 # Peering for project Project
 resource "mongodbatlas_network_peering" "test" {
@@ -94,7 +96,8 @@ resource "mongodbatlas_network_peering" "test" {
   resource_group_name   = local.resource_group_name
   vnet_name             = local.vnet_name
 
-  depends_on = [mongodbatlas_private_ip_mode.my_private_ip_mode]
+# See above node on Peering only for Azure
+  # depends_on = [mongodbatlas_private_ip_mode.my_private_ip_mode]
 }
 
 
