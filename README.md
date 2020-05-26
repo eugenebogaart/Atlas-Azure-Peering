@@ -17,12 +17,12 @@ Initializing provider plugins...
 
 ## Config:
 * Set up credential, as in section: "Configure Script - Credentials"
-* Change basic parameters, as in section: "Other configuration"
+* Change basic parameters, as in file : locals.tf
 * Run: terraform apply
 
 ## Todo:
 * Add a subnet to Azure Vnet
-* Create a Virtual Machine in Azure
+* ~~Create a Virtual Machine in Azure~~
 * Install stuff on VM
 
 ## Basic Terraform resources in script
@@ -37,7 +37,7 @@ Initializing provider plugins...
 * Create a virtual machine Azure is left to the reader.  
 
 
-## Configure Script - Credentials
+## Configure Script - Credentials: "varaibles.tf"
 
 To configure the Terraform script, one needs public and private key setup for Atlas. 
 These keys are expected in environment variables, or can be provide as command line 
@@ -53,7 +53,7 @@ as environment variables. Values need to be provided in TF_VAR_ format.
 * TF_VAR_azure_subscription_id=<SUBSCRIPTION_ID>
 * TF_VAR_azure_tenant_id=<DIRECTORY_ID>
 
-## Other configuration
+## Other configuration: "locals.tf"
 
 In the locals resource or the Terraform file, several parameters should be adapted to your need
 ```
@@ -106,4 +106,4 @@ resource "mongodbatlas_network_container" "test" {
 
 ## Known Bugs
 * Some times the script ends with a complaint: External Azure subscription unreachable.
-Just run it again 
+Just run it again.  It looks like a timing issue in the Azure API, where a resource is created but not available yet.
