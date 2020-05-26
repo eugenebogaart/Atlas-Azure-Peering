@@ -26,4 +26,5 @@ EOF
 
  az role assignment create --role "AtlasPeering/${1}/${2}/${3}" --assignee "e90a1407-55c3-432d-9cb1-3638900a9d22" --scope "/subscriptions/${1}/resourceGroups/${2}/providers/Microsoft.Network/virtualNetworks/${3}"
 
+
 echo $?
