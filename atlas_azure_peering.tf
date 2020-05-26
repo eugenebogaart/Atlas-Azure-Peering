@@ -19,6 +19,11 @@ variable "private_key_path" {
   type = string
 }
 
+variable "admin_password" {
+  description = "Generic password for demo resources"
+  type = string
+}
+
 locals {
   # Atlas organization where to provsion a new group
   organization_id       = "599ef70e9f78f769464e3729"
@@ -59,7 +64,7 @@ provider "mongodbatlas" {
   # variable are provided via ENV
   # public_key = ""
   # private_key  = ""
-  version = "~> 0.3"
+  version = "~>0.4"
 }
 
 # Need a project
@@ -104,10 +109,8 @@ resource "mongodbatlas_network_peering" "test" {
 resource "mongodbatlas_project_ip_whitelist" "test" {
     project_id = mongodbatlas_project.proj1.id
 
-    whitelist {
-      cidr_block = local.subnet_address_space
-      comment    = "cidr block Azure subnet1"
-    }
+    cidr_block = local.subnet_address_space
+    comment    = "cidr block Azure subnet1"
 }
 
 resource "mongodbatlas_cluster" "this" {
@@ -117,7 +120,7 @@ resource "mongodbatlas_cluster" "this" {
   replication_factor           = 3
   backup_enabled               = true
   auto_scaling_disk_gb_enabled = true
-  mongo_db_major_version       = "4.0"
+  mongo_db_major_version       = "4.2"
 
   provider_name               = local.provider_name
   provider_instance_size_name = "M10"
@@ -202,10 +205,8 @@ resource "azurerm_network_security_group" "demo-vm-nsg" {
 # Create network interface
 resource "azurerm_network_interface" "demo-vm-nic" {
     name                      = "myNIC"
-    #location                  = local.location_alt
     location                  = azurerm_network_security_group.demo-vm-nsg.location
     resource_group_name       = azurerm_resource_group.atlas-group.name
-    #network_security_group_id = azurerm_network_security_group.demo-vm-nsg.id
 
     ip_configuration {
         name                          = "myNicConfiguration"
@@ -217,6 +218,14 @@ resource "azurerm_network_interface" "demo-vm-nic" {
     tags = {
         environment = "Atlas Demo"
     }
+
+    depends_on = [ azurerm_network_interface.demo-vm-nic ]
+}
+
+# Connect the security group to the network interface
+resource "azurerm_network_interface_security_group_association" "demo-vm" {
+    network_interface_id      = azurerm_network_interface.demo-vm-nic.id
+    network_security_group_id = azurerm_network_security_group.demo-vm-nsg.id
 }
 
 # Create virtual machine
@@ -247,15 +256,16 @@ resource "azurerm_virtual_machine" "demo-vm" {
     os_profile {
         computer_name     = "demo-vm"
         admin_username    = local.admin_username
+        admin_password    = var.admin_password
     }
 
 
     os_profile_linux_config {
-        disable_password_authentication = true
-        ssh_keys {
-            path          = "/home/eugeneb/.ssh/authorized_keys"
-            key_data      = var.ssh_keys_data
-        }
+        disable_password_authentication = false
+    #    ssh_keys {
+    #        path          = "/home/eugeneb/.ssh/authorized_keys"
+    #        key_data      = var.ssh_keys_data
+    #    }
     }
 
     tags = {
@@ -266,7 +276,8 @@ resource "azurerm_virtual_machine" "demo-vm" {
         type = "ssh"
         host = azurerm_public_ip.demo-vm-ip.ip_address
         user = local.admin_username
-        private_key = file(var.private_key_path)
+        password = var.admin_password
+    #    private_key = file(var.private_key_path)
     }
 
 #    provisioner "remote-exec" {
@@ -275,7 +286,7 @@ resource "azurerm_virtual_machine" "demo-vm" {
 #        "sudo apt-get -y update",
 #        "sudo apt-get -y install python3-pip",
 #        "sudo apt-get -y update",
-#        "sudo apt-get -y install python3-pip",
+##       "sudo apt-get -y install python3-pip",
 #        "sudo pip3 install pymongo==3.9.0",
 #        "sudo pip3 install faker",
 #        "sudo pip3 install dnspython"
