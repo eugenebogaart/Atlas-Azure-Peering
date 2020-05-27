@@ -37,11 +37,14 @@ Initializing provider plugins...
 * Create a virtual machine Azure is left to the reader.  
 
 
-## Configure Script - Credentials: "varaibles.tf"
+## Configure Script - Credentials: "variables.tf"
 
-To configure the Terraform script, one needs public and private key setup for Atlas. 
-These keys are expected in environment variables, or can be provide as command line 
-parameters of added to a Terrafom Variable file. The MONGODBATLAS plugin will read
+To configure the providers, such as Atlas and Azure, one needs credentials to gain access.
+In case of MongoDB Atlas a public and private key pair is required. 
+How to create an API key pair for an existing Atlas organization can be found here:
+https://docs.atlas.mongodb.com/configure-api-access/#programmatic-api-keys
+These keys are read in environment variables for safety. Alternatively these parameters
+can be provide on the command line of the terraform invocation. The MONGODBATLAS provider will read
 the 2 distinct variable, as below:
 
 * MONGODB_ATLAS_PUBLIC_KEY=<PUBLICKEY>
@@ -55,7 +58,7 @@ as environment variables. Values need to be provided in TF_VAR_ format.
 
 ## Other configuration: "locals.tf"
 
-In the locals resource or the Terraform file, several parameters should be adapted to your need
+In the locals resource of the locals.tf file, several parameters should be adapted to your needs
 ```
 locals {
   # Atlas organization where to provsion a new group
@@ -105,5 +108,5 @@ resource "mongodbatlas_network_container" "test" {
 
 
 ## Known Bugs
-* Some times the script ends with a complaint: External Azure subscription unreachable.
-Just run it again.  It looks like a timing issue in the Azure API, where a resource is created but not available yet.
+* Some times the terraform deploy stops with a complaint: External Azure subscription unreachable.
+Just run it again.  It looks like a timing issue in the Azure Provider and/or Azure API, where a resource is created but not yet available.
