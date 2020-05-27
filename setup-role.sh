@@ -1,8 +1,14 @@
 #!/bin/sh
 
+# General documentation of MSFT to explain the below script:
+# https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-manage-peering#permissions
+
 echo $1 $2 $3
 
-# this might create an error, because it is only need once!
+# this might create an error, because it is only needed once!
+
+# Set up a service principle: to Allow the application to access cloudpeering-prod on behalf of the signed-in user.
+
 az ad sp create --id e90a1407-55c3-432d-9cb1-3638900a9d22
 
 cat <<EOF > peering-role.json
