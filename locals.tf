@@ -25,5 +25,13 @@ locals {
   subnet_address_space  = "10.11.4.192/26"
   # Azure vm admin_user
   admin_username        = "eugeneb"
+  # Azure vm size
+  azure_vm_size		= "Standard_F2"
+  # Azure vm_name	
+  azure_vm_name		= "demo"
+}
+
+terraform {
+  required_version = ">= 0.13.5"
 }
 
