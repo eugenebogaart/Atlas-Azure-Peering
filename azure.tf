@@ -15,36 +15,42 @@
 #################### MICROSOFT AZURE SECTION ####################
 #################################################################
 provider "azurerm" {
-  # whilst the `version` attribute is optional,
-  # we recommend pinning to a given version of the Provider
-  # version = "=1.36.0"
-  version = "=2.1"
-  subscription_id = var.azure_subscription_id
-  tenant_id = var.azure_tenant_id
-  features {}
+    # whilst the `version` attribute is optional,
+    # we recommend pinning to a given version of the Provider
+    version = "=2.36"
+    subscription_id = var.azure_subscription_id
+    tenant_id = var.azure_tenant_id
+    features {}
 }
 
 # Create a resource group
 resource "azurerm_resource_group" "atlas-group" {
-  name     = local.resource_group_name
-  location = local.location
+    name     = local.resource_group_name
+    location = local.location
+
+    tags = {
+        environment = "Atlas Demo"
+    }
 }
 
 # Create a virtual network within the resource group
 resource "azurerm_virtual_network" "atlas-group" {
-  name                = local.vnet_name
-  resource_group_name = azurerm_resource_group.atlas-group.name
-  location            = azurerm_resource_group.atlas-group.location
-  address_space       = local.address_space
+    name                = local.vnet_name
+    resource_group_name = azurerm_resource_group.atlas-group.name
+    location            = azurerm_resource_group.atlas-group.location
+    address_space       = local.address_space
+ 
+    tags = {
+        environment = "Atlas Demo"
+    }
 }
 
 # Create a subnet in virtual network,
 resource "azurerm_subnet" "atlas-group" {
-  name                 = local.subnet
-  address_prefix       = local.subnet_address_space
-  resource_group_name  = azurerm_resource_group.atlas-group.name
-  virtual_network_name = azurerm_virtual_network.atlas-group.name
-
+    name                 = local.subnet
+    address_prefixes     = [local.subnet_address_space]
+    resource_group_name  = azurerm_resource_group.atlas-group.name
+    virtual_network_name = azurerm_virtual_network.atlas-group.name
 }
 
 resource "azurerm_public_ip" "demo-vm-ip" {
@@ -109,43 +115,32 @@ resource "azurerm_network_interface_security_group_association" "demo-vm" {
 }
 
 # Create virtual machine
-resource "azurerm_virtual_machine" "demo-vm" {
-    name                  = "demo-vm"
+resource "azurerm_linux_virtual_machine" "demo-vm" {
+    name                  = local.azure_vm_name
     location              = local.location_alt
     resource_group_name   = azurerm_resource_group.atlas-group.name
-    network_interface_ids = [azurerm_network_interface.demo-vm-nic.id]
-    vm_size               = "Standard_D2s_v3"
+    size                  = local.azure_vm_size
+    admin_username        = local.admin_username
+    admin_password        = var.admin_password
+    network_interface_ids = [
+	azurerm_network_interface.demo-vm-nic.id,
+    ]
 
-    storage_os_disk {     
-        name              = "demo-OsDisk"
-        caching           = "ReadWrite"
-        create_option     = "FromImage"
-        managed_disk_type = "Standard_LRS"
+    admin_ssh_key {
+        username   = local.admin_username
+        public_key = file(var.public_key_path)
     }
 
-    #This will delete the OS disk and data disk automatically when deleting the VM
-    delete_os_disk_on_termination = "true"
+    os_disk {     
+        caching              = "ReadWrite"
+        storage_account_type = "Standard_LRS"
+    }
 
-    storage_image_reference {
+    source_image_reference {
         publisher         = "Canonical"
         offer             = "UbuntuServer"
         sku               = "18.04-LTS"
         version           = "latest"
-    }
-
-    os_profile {
-        computer_name     = "demo-vm"
-        admin_username    = local.admin_username
-        admin_password    = var.admin_password
-    }
-
-
-    os_profile_linux_config {
-        disable_password_authentication = false
-    #    ssh_keys {
-    #        path          = "/home/eugeneb/.ssh/authorized_keys"
-    #        key_data      = var.ssh_keys_data
-    #    }
     }
 
     tags = {
@@ -153,25 +148,38 @@ resource "azurerm_virtual_machine" "demo-vm" {
     }
 
     connection {
-        type = "ssh"
-        host = azurerm_public_ip.demo-vm-ip.ip_address
-        user = local.admin_username
-        password = var.admin_password
-    #    private_key = file(var.private_key_path)
+        disable_password_authentication = true
+        type 				= "ssh"
+        host 				= self.public_ip_address
+        user 				= self.admin_username
+        password 			= self.admin_password
+        agent 				= true
+        private_key 			= file(var.private_key_path)
     }
 
-#    provisioner "remote-exec" {
-#        inline = [
-#        "sleep 10",
-#        "sudo apt-get -y update",
-#        "sudo apt-get -y install python3-pip",
-#        "sudo apt-get -y update",
-##       "sudo apt-get -y install python3-pip",
-#        "sudo pip3 install pymongo==3.9.0",
-#        "sudo pip3 install faker",
-#        "sudo pip3 install dnspython"
-#        ]
-#    }
+    provisioner "remote-exec" {
+
+        connection {
+            host = self.public_ip_address
+            user = self.admin_username
+            password = self.admin_password
+        }
+
+        inline = [
+        "sleep 10",
+        "sudo apt-get -y update",
+        "sudo apt-get -y install python3-pip",
+        "sudo apt-get -y update",
+        "sudo pip3 install pymongo==3.9.0",
+        "sudo pip3 install faker",
+        "sudo pip3 install dnspython",
+
+        "wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -",
+        "echo 'deb [ arch=amd64 ] http://repo.mongodb.com/apt/ubuntu bionic/mongodb-enterprise/4.4 multiverse' | sudo tee /etc/apt/sources.list.d/mongodb-enterprise.list",
+        "sudo apt-get update",
+	"sudo apt-get install -y mongodb-enterprise-shell"
+        ]
+    }
 }
 
 
