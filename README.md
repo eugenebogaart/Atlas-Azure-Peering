@@ -1,18 +1,24 @@
 # MongoDB Atlas project peered into Azure VNet 
 
+## What is new
+* upgrade terrafrom to 0.13,  
+* use Azurerm 2.36  
+* Use mongodbatlas 0.7  i
+* create Azure vm with Mongo shell
+
 ## Background
 Based on an small Proof of Concept to make Atlas available via VNet peering in Azure in the same region, this script was generalized to automate all steps. Assumption was to automate each step, including the scripts to define custom roles for peering.  The documentation on how to do this in several manual steps is here: https://docs.atlas.mongodb.com/security-vpc-peering/
 
 ## Prerequisites:
 * Authenticate into Azure via CLI with:  az login
-* Have Terraform 0.12+ installed
+* Have Terraform 0.13.5 installed
 * Run: terraform init 
 
 ```
 Initializing provider plugins...
 - Checking for available provider plugins...
-- Downloading plugin for provider "azurerm" (hashicorp/azurerm) 1.36.0...
-- Downloading plugin for provider "mongodbatlas" (terraform-providers/mongodbatlas) 0.3.1...
+- Downloading plugin for provider "azurerm" (hashicorp/azurerm) e+.2.36...
+- Downloading plugin for provider "mongodbatlas" (terraform-providers/mongodbatlas) 0.7.0...
 ```
 
 ## Config:
@@ -25,16 +31,11 @@ Initializing provider plugins...
 * ~~Create a Virtual Machine in Azure~~
 * Install stuff on VM
 
-## Basic Terraform resources in script
-* mongodbatlas_project,  creates an empty project in your Atlas account
-* mongodbatlas_private_ip_mode,  switches new project to private IP mode so it can be used for peering
-* mongodbatlas_network_container,  setup a container for peering (internal Atlas thing)
-* mongodbatlas_network_peering,  setup actual peering
-* azurerm_resource_group, create a Azure resource group to hold vnet 
-* azurerm_virtual_network, create a Azure Virtual Network to peer into
-* mongodbatlas_cluster, finally create cluster 
-
-* Create a virtual machine Azure is left to the reader.  
+## Basic Terraform setup broken up in several files
+* atlas.tf   creates Atlas side in a new project, VNet peering and small cluster
+* azure.tf   creates Azure side for VNet peering, + one VM with Mongo shell installed
+* locals.tf  here you can configure script to use meaning full name
+* variables.tf  here you can attach credentials for Atlas, Azure and SSH
 
 
 ## Configure Script - Credentials: "variables.tf"
@@ -86,7 +87,11 @@ locals {
   # Azure subnet cidr
   subnet_address_space  = "10.11.4.192/26"
   # Azure vm admin_user
-  admin_username        = "myadmin"
+  admin_username        = "eugeneb"
+  # Azure vm size
+  azure_vm_size         = "Standard_F2"
+  # Azure vm_name       
+  azure_vm_name         = "demo"
 }
 ```
 
@@ -104,6 +109,14 @@ resource "mongodbatlas_network_container" "test" {
     command = "./setup-role.sh ${var.azure_subscription_id} ${local.resource_group_name} ${local.vnet_name} >> setup-role.output"
   }
 }
+```
+
+## Give a go
+
+In you favorite shell, run terraform apply and review the execution plan on what will be added, changed and detroyed. Acknowledge by typing: yes 
+
+```
+%>  terraform apply
 ```
 
 
