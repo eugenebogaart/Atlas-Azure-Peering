@@ -13,6 +13,11 @@ variable "ssh_keys_data" {
   type = string
 }
 
+variable "public_key_path" {
+  description = "Access path to public key"
+  type = string
+}
+
 variable "private_key_path" {
   description = "Access path to private key"
   type = string
