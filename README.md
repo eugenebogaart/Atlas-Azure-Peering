@@ -26,10 +26,10 @@ Initializing provider plugins...
 * Change basic parameters, as in file : locals.tf
 * Run: terraform apply
 
-## Todo:
-* Add a subnet to Azure Vnet
+## Todo <Nov 2020>:
+* ~~Add a subnet to Azure Vnet~~
 * ~~Create a Virtual Machine in Azure~~
-* Install stuff on VM
+* ~~Install stuff on VM~~
 
 ## Basic Terraform setup broken up in several files
 * atlas.tf   creates Atlas side in a new project, VNet peering and small cluster
