@@ -3,7 +3,7 @@
 ## What is new
 * upgrade terrafrom to 0.13,  
 * use Azurerm 2.36  
-* Use mongodbatlas 0.7  i
+* use mongodbatlas 0.7  
 * create Azure vm with Mongo shell
 
 ## Background
